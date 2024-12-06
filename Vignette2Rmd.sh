@@ -19,8 +19,8 @@ fi
 
 # Get the URL and Title arguments
 URL=$1
-shift # Remove the URL from the arguments
-TITLE="$*" # Combine the rest of the arguments as the title
+shift
+TITLE="$*"
 
 # Create a temporary file for the HTML content
 TMP_HTML=$(mktemp)
@@ -50,7 +50,20 @@ fi
 
 # Add YAML header to the R Markdown file
 echo "Adding YAML header..."
-sed -i "1i---\ntitle: \"$TITLE\"\noutput: html_document\n---\n" "$OUTPUT_RMD"
+sed -i '' "1i\\
+---\\
+title: \"$TITLE\"\\
+output: html_document\\
+---\\
+" "$OUTPUT_RMD"
+
+# Replace ``` {.sourceCode .r} with ```{r}
+echo "Fixing code block markers..."
+sed -i '' -E 's/^``` \{\.sourceCode \.r\}$/```{r}/g' "$OUTPUT_RMD"
+
+# Fix any doubled code delimiters
+echo "Fixing doubled delimiters..."
+sed -i '' -E '/^```$/N;s/```\n```/```/g' "$OUTPUT_RMD"
 
 # Cleanup temporary file
 rm -f "$TMP_HTML"
